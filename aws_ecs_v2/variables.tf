@@ -4,15 +4,21 @@ variable "region" {
   default     = "eu-west-2"
 }
 
-variable "vpc-cidr" {
+variable "vpc_cidr" {
   default     = "10.0.0.0/16"
   description = "VPC CIDR BLOCK"
   type        = string
 }
 
-variable "Public_Subnet_1" {
+variable "public_subnet" {
   default     = "10.0.0.0/24"
   description = "Public_Subnet_1"
+  type        = string
+}
+
+variable "private_subnet" {
+  default     = "10.0.2.0/24"
+  description = "Private_Subnet_1"
   type        = string
 }
 
@@ -35,4 +41,14 @@ variable key_name {
 variable ami {
   default     = "ami-048df70cfbd1df3a9"
   type        = string
+}
+
+variable "image_name" {
+  type        = string
+  default     = "632296647497.dkr.ecr.eu-west-2.amazonaws.com/py-app"
+}
+
+variable "cluster_name" {
+  type        = string
+  default     = "development"
 }

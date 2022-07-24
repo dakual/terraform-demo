@@ -34,18 +34,36 @@ resource "aws_route_table" "public-route-table" {
 
 # Associate Public Subnet 1 to "Public Route Table"
 resource "aws_route_table_association" "public-subnet-1-route-table-association" {
+  #count          = "${length(data.aws_availability_zones.available.names)}"
+  #subnet_id      = "${element(aws_subnet.public-subnet-1.*.id, count.index)}"
   subnet_id      = aws_subnet.public-subnet-1.id
   route_table_id = aws_route_table.public-route-table.id
 }
 
 # Create Public Subnet 1
 resource "aws_subnet" "public-subnet-1" {
+  #count                   = "${length(data.aws_availability_zones.available.names)}"
   vpc_id                  = "${aws_vpc.vpc.id}"
   cidr_block              = "${var.Public_Subnet_1}"
+  #availability_zone       = "${element(data.aws_availability_zones.available.names, count.index)}"
   availability_zone       = "eu-west-2a"
   map_public_ip_on_launch = true
 
   tags   = {
     Name = "public-subnet-1"
+  }
+}
+
+# Create Private Subnet 1
+resource "aws_subnet" "private-subnet-1" {
+  #count                    = "${length(data.aws_availability_zones.available.names)}"
+  vpc_id                   = "${aws_vpc.vpc.id}"
+  cidr_block               = "${var.Private_Subnet_1}"
+  #availability_zone        = "${element(data.aws_availability_zones.available.names, count.index)}"
+  availability_zone        = "eu-west-2a"
+  map_public_ip_on_launch  = false
+  
+  tags = {
+    Name = "private-subnet-1"
   }
 }
