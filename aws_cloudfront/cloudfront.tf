@@ -10,14 +10,14 @@ resource "aws_s3_bucket" "b" {
   }
 }
 
-# resource "aws_s3_bucket_acl" "b_acl" {
-#   bucket = aws_s3_bucket.b.id
-#   acl    = "public-read"
-# }
+resource "aws_s3_bucket_acl" "b_acl" {
+  bucket = aws_s3_bucket.b.id
+  acl    = "public-read"
+}
 
 resource "aws_s3_object" "o_obj_1" {
   bucket = aws_s3_bucket.b.id
-#  acl    = "public-read"
+  acl    = "public-read"
   key    = "404.html"
   source = "${path.module}/404.html"
   etag   = filemd5("${path.module}/404.html")
@@ -25,7 +25,7 @@ resource "aws_s3_object" "o_obj_1" {
 
 resource "aws_s3_object" "o_obj_2" {
   bucket = aws_s3_bucket.b.id
-#  acl    = "public-read"
+  acl    = "public-read"
   key    = "index.html"
   source = "${path.module}/index.html"
   etag   = filemd5("${path.module}/index.html")
