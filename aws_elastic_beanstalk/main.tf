@@ -19,7 +19,7 @@ resource "aws_iam_role" "ec2" {
 }
 
 resource "aws_iam_role" "svc" {
-  name = "beanstalk-svc-role"
+  name = "beanstalk-service-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -37,21 +37,21 @@ resource "aws_iam_role" "svc" {
 }
 
 resource "aws_iam_instance_profile" "ec2" {
-  name = "beanstalk-instance-profile"
+  name = "beanstalk-ec2-profile"
   role = aws_iam_role.ec2.name
 }
 
 resource "aws_iam_instance_profile" "svc" {
-  name = "beanstalk-instance-profile"
+  name = "beanstalk-svc-profile"
   role = aws_iam_role.svc.name
 }
 
 # resource "aws_s3_bucket" "beanstalk" {
-#   bucket = "${var.application_name}-${data.aws_caller_identity.aws_id.account_id}"
+#   bucket = "${var.app_name}-${data.aws_caller_identity.aws_id.account_id}"
 #   force_destroy = true
 
 #   tags = {
-#     Name = "${var.application_name} bucket"
+#     Name = "${var.app_name} bucket"
 #   }  
 # }
 
@@ -63,24 +63,23 @@ resource "aws_iam_instance_profile" "svc" {
 
 # resource "aws_elastic_beanstalk_application_version" "default" {
 #   name        = "php-app-v1"
-#   application = var.application_name
+#   application = aws_elastic_beanstalk_application.app.name
 #   description = "application version created by terraform"
 #   bucket      = aws_s3_bucket.beanstalk.id
 #   key         = aws_s3_object.beanstalk.id
 # }
 
 resource "aws_elastic_beanstalk_application" "app" {
-  name = var.application_name
+  name = var.app_name
 }
 
 resource "aws_elastic_beanstalk_environment" "devenv" {
-  name                ="${var.application_name}-Api"
+  name                = "${var.app_name}-env"
   application         = aws_elastic_beanstalk_application.app.name
-  # solution_stack_name = "64bit Amazon Linux 2 v3.3.2 running Corretto 11"
-  solution_stack_name = "64bit Amazon Linux 2 v3.4.1 running PHP 8.1"
-  tier                = "WebServer"
+  solution_stack_name = "${var.stack_name}"
+  tier                = "${var.tier}"
   tags = {
-      App_Name = var.application_name
+      AppName     = var.app_name
       Environment = "test"
   }
 
@@ -88,18 +87,16 @@ resource "aws_elastic_beanstalk_environment" "devenv" {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
     value     = "${aws_iam_instance_profile.ec2.name}"
-    # value     =  "aws-elasticbeanstalk-ec2-role"
   }
   setting {
     namespace = "aws:elasticbeanstalk:environment"
     name      = "ServiceRole"
     value     = "${aws_iam_instance_profile.svc.name}"
-    # value     = "aws-elasticbeanstalk-service-role"
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "InstanceType"
-    value     = "t2.micro"
+    value     = "${var.instance_type}"
   }
   setting {
     namespace = "aws:ec2:vpc"
@@ -120,5 +117,10 @@ resource "aws_elastic_beanstalk_environment" "devenv" {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "EC2KeyName"
     value     = "${var.ssh_key}"
+  }
+  setting {
+    name = "SERVER_PORT"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    value = "5000"
   }
 }

@@ -1,0 +1,9 @@
+aws_region    = "eu-central-1"
+app_name      = "myapp"
+vpc_id        = "vpc-064f43e135e1ecbc0"
+vpc_subnets   = ["subnet-02caf3f4a7dab08f6","subnet-0e00855f4313be466","subnet-0535e60978084785d"]
+vpc_cidr      = "0.0.0.0/0"
+instance_type = "t2.micro"
+tier          = "WebServer"
+ssh_key       = "mykey"
+stack_name    = "64bit Amazon Linux 2 v3.4.1 running PHP 8.1"
