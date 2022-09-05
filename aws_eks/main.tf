@@ -51,7 +51,7 @@ resource "aws_security_group" "eks-cluster" {
 
 # Creating the EKS cluster
 resource "aws_eks_cluster" "this" {
-  name     = "dev"
+  name     = "dev-cluster"
   role_arn = "${aws_iam_role.iam-role-eks-cluster.arn}"
   version  = "1.22"
 
@@ -104,7 +104,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
 # Create EKS cluster node group
 resource "aws_eks_node_group" "node" {
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "node_group1"
+  node_group_name = "node-group-1"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = var.vpc_subnets
 
@@ -113,6 +113,11 @@ resource "aws_eks_node_group" "node" {
     max_size     = 3
     min_size     = 1
   }
+
+  ami_type       = "AL2_x86_64"
+  instance_types = ["t2.micro"]
+  capacity_type  = "ON_DEMAND"
+  disk_size      = 10
 
   depends_on = [
     aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
