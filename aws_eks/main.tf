@@ -29,8 +29,8 @@ resource "aws_iam_role_policy_attachment" "eks-cluster-AmazonEKSServicePolicy" {
 
 # Security group for network traffic to and from AWS EKS Cluster.
 resource "aws_security_group" "eks-cluster" {
-  name        = "SG-eks-cluster"
-  vpc_id      = "vpc-123456789"  
+  name        = "eks-cluster-sg"
+  vpc_id      = "${var.vpc_id}"  
 
 # Egress allows Outbound traffic from the EKS cluster to the  Internet 
   egress {
@@ -50,20 +50,20 @@ resource "aws_security_group" "eks-cluster" {
 }
 
 # Creating the EKS cluster
-resource "aws_eks_cluster" "eks_cluster" {
-  name     = "terraformEKScluster"
+resource "aws_eks_cluster" "this" {
+  name     = "dev"
   role_arn = "${aws_iam_role.iam-role-eks-cluster.arn}"
   version  = "1.22"
 
 # Adding VPC Configuration
   vpc_config {
     security_group_ids = ["${aws_security_group.eks-cluster.id}"]
-    subnet_ids         = ["subnet-1312586","subnet-8126352"] 
+    subnet_ids         = var.vpc_subnets
   }
 
   depends_on = [
-    "aws_iam_role_policy_attachment.eks-cluster-AmazonEKSClusterPolicy",
-    "aws_iam_role_policy_attachment.eks-cluster-AmazonEKSServicePolicy",
+    aws_iam_role_policy_attachment.eks-cluster-AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.eks-cluster-AmazonEKSServicePolicy,
   ]
 }
 
@@ -103,10 +103,10 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
 
 # Create EKS cluster node group
 resource "aws_eks_node_group" "node" {
-  cluster_name    = aws_eks_cluster.eks_cluster.name
+  cluster_name    = aws_eks_cluster.this.name
   node_group_name = "node_group1"
   node_role_arn   = aws_iam_role.eks_nodes.arn
-  subnet_ids      = ["subnet-","subnet-"]
+  subnet_ids      = var.vpc_subnets
 
   scaling_config {
     desired_size = 2
