@@ -7,8 +7,8 @@ clientid = "myDevice1"
 topic    = "topic/test"
 
 ca       = "../certs/cacert.pem" 
-cert     = "../certs/certificate.pem.crt"
-private  = "../certs/private.pem.key"
+cert     = "../certs/device-1/certificate.pem.crt"
+private  = "../certs/device-1/private.pem.key"
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
