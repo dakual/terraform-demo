@@ -5,3 +5,4 @@ output "iot_endpoint" {
 output "iot_arn" {
   value = aws_iot_thing.iot.arn
 }
+

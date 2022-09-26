@@ -41,15 +41,15 @@ resource "aws_iot_policy_attachment" "att" {
 
 resource "local_file" "certificate" {
   content  = "${aws_iot_certificate.cert.certificate_pem}"
-  filename = "${var.outputs_path}/certificate.pem.crt"
+  filename = "${path.module}/certs/certificate.pem.crt"
 }
 
 resource "local_file" "publickey" {
   content  = "${aws_iot_certificate.cert.public_key}"
-  filename = "${var.outputs_path}/public.pem.key"
+  filename = "${path.module}/certs/public.pem.key"
 }
 
 resource "local_file" "privatekey" {
   content  = "${aws_iot_certificate.cert.private_key}"
-  filename = "${var.outputs_path}/private.pem.key"
+  filename = "${path.module}/certs/private.pem.key"
 }

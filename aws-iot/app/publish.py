@@ -1,15 +1,14 @@
 import sys, ssl, os, time, datetime
 import logging, traceback
 import paho.mqtt.client as mqtt
-import certifi
 
 endpoint = os.getenv('AWS_IOT_ENDPOINT')
 clientid = "myDevice1"
 topic    = "topic/test"
 
-ca       = "./certs/cacert.pem" 
-cert     = "./certs/certificate.pem.crt"
-private  = "./certs/private.pem.key"
+ca       = "../certs/cacert.pem" 
+cert     = "../certs/certificate.pem.crt"
+private  = "../certs/private.pem.key"
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
