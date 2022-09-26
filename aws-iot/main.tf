@@ -53,13 +53,3 @@ resource "local_file" "privatekey" {
   content  = "${aws_iot_certificate.cert.private_key}"
   filename = "${var.outputs_path}/private.pem.key"
 }
-
-
-resource "null_resource" "env" {
-  provisioner "local-exec" {
-    command = "export AWS_IOT_ENDPOINT=${data.aws_iot_endpoint.iot.endpoint_address}"
-    interpreter = ["/bin/bash", "-c"]
-  }
-}
-
-
