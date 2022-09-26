@@ -19,7 +19,7 @@ output "iot_endpoint" {
   value = data.aws_iot_endpoint.iot.endpoint_address
 }
 
-module "iot-hosts" {
+module "iot-devices" {
   for_each         = var.iot-things
   source           = "./iot"
   hostname         = each.key
