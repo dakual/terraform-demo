@@ -1,14 +1,6 @@
 import sys, ssl, os, time, datetime
-import logging, traceback
+import logging, traceback, argparse
 import paho.mqtt.client as mqtt
-
-endpoint = os.getenv('AWS_IOT_ENDPOINT')
-clientid = "myDevice1"
-topic    = "topic/test"
-
-ca       = "../certs/cacert.pem" 
-cert     = "../certs/device-1/certificate.pem.crt"
-private  = "../certs/device-1/private.pem.key"
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -31,6 +23,17 @@ def ssl_alpn():
         raise e
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--device', help='Device hostname', default="device-1")
+    args = parser.parse_args()
+
+    endpoint = os.getenv('AWS_IOT_ENDPOINT')
+    clientid = "myDevice1"
+    topic    = "topic/test"
+    ca       = "../certs/cacert.pem" 
+    cert     = "../certs/{0}/certificate.pem.crt".format(args.device)
+    private  = "../certs/{0}/private.pem.key".format(args.device)
+
     try:
         mqttc = mqtt.Client(clientid)
         ssl_context = ssl_alpn()
