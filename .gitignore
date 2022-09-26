@@ -15,3 +15,7 @@
 
 # Ignored vscode files
 .vscode/
+
+# SSL certificates
+*.key
+*.crt
