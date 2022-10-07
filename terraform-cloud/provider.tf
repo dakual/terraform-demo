@@ -11,7 +11,7 @@ terraform {
     organization = "dakual"
 
     workspaces {
-      name = "aws-ec2-test"
+      name = "terraform-cloud"
     }
   }
 
