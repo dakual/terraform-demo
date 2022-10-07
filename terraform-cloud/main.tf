@@ -28,7 +28,7 @@ resource "aws_instance" "project-iac" {
   tags = {
     Name ="SERVER01"
     Environment = "DEV"
-    OS = "UBUNTU"
+    OS = "debian"
     Managed = "IAC"
   }
 }
