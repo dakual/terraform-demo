@@ -1,0 +1,24 @@
+[
+  {
+    "image": "${local.container_image}:latest",
+    "name": "${local.name}-container-${local.environment}",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "portMappings": [
+      {
+        "protocol": "tcp",
+        "containerPort": 8080,
+        "hostPort": 8080
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-region": "${local.region}",
+        "awslogs-group": "${aws_cloudwatch_log_group.this.name}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
