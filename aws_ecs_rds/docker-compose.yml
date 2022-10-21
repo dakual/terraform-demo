@@ -1,0 +1,52 @@
+version: "3.2"
+services:
+  mysql:
+    image: mysql/mysql-server:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_DATABASE=demo
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=demo
+      - MYSQL_PASSWORD=demo
+    volumes:
+      - "data:/var/lib/mysql"
+    networks:
+      - demo-app
+
+  backend:
+    container_name: backend
+    image: backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=demo
+      - DB_PASS=demo
+      - DB_NAME=demo
+    networks:
+      - demo-app
+
+  frontend:
+    container_name: frontend
+    image: frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    environment:
+      - API_HOST=http://backend:5000
+    networks:
+      - demo-app
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+      - mysql
+
+networks:
+  demo-app:
+    driver: bridge
+volumes:
+  data:

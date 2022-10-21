@@ -6,6 +6,7 @@
 *.terraform.lock.hcl
 # Directories
 .terraform/
+vendor/
 
 # Ignored Terraform files
 *gitignore*.tf
