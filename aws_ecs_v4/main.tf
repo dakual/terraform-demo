@@ -5,7 +5,7 @@ locals {
   vpc_id          = "vpc-064f43e135e1ecbc0"
   subnets         = ["subnet-02caf3f4a7dab08f6"]
   sgroups         = ["sg-095938d5e717361ea"]
-  container_image = "public.ecr.aws/m2a7z1o1/frontend-app"
+  container_image = "bitnami/wordpress:latest"
   container_port  = 8080
   role_arn        = "arn:aws:iam::632296647497:role/ecsTaskExecutionRole"
 }
@@ -28,6 +28,14 @@ resource "aws_security_group" "tasks" {
     to_port          = 80
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    description      = "NFS traffic from VPC"
+    from_port        = 2049
+    to_port          = 2049
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
   }
 
   egress {
@@ -59,14 +67,37 @@ resource "aws_ecs_task_definition" "main" {
   # container_definitions = file("task-definitions/demo-app.json")
   container_definitions = jsonencode([{
       name      = "${local.name}-container-${local.environment}"
-      image     = "${local.container_image}:latest"
+      image     = "${local.container_image}"
       cpu       = 256
       memory    = 512
       essential = true
+      environment = [{
+          name  = "WORDPRESS_DATABASE_HOST"
+          value = "database-1.cjmsfphwzfjt.eu-central-1.rds.amazonaws.com"#aws_db_instance.main.address
+      },{
+          name  = "WORDPRESS_DATABASE_NAME"
+          value = "demo"
+      },{
+          name  = "WORDPRESS_DATABASE_USER"
+          value = "demo"
+      },{
+          name  = "WORDPRESS_DATABASE_PASSWORD"
+          value = "12345678"
+      },{
+          name  = "ALLOW_EMPTY_PASSWORD"
+          value = "true"
+      }]
       portMappings = [{
           protocol      = "tcp"
           containerPort = local.container_port
           hostPort      = local.container_port
+      }]
+      # entryPoint = ["sh","-c"]
+      # command = ["/bin/sh -c \"id && ls -al /bitnami && ls -al /bitnami/wordpress\""]
+      mountPoints = [{
+        "sourceVolume"  = "wordpress_data",
+        "containerPath" = "/bitnami/wordpress",
+        "readOnly"      = false
       }]
       logConfiguration = {
         logDriver = "awslogs"
@@ -77,7 +108,21 @@ resource "aws_ecs_task_definition" "main" {
         }
       }
   }])
+
+  volume {
+    name = "wordpress_data"
+    efs_volume_configuration {
+      file_system_id = aws_efs_file_system.main.id
+      root_directory = "/"
+      transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.main.id
+        iam             = "ENABLED"
+      }
+    }
+  }
 }
+
 
 resource "aws_ecs_service" "main" {
   name            = "${local.name}-service-${local.environment}"
@@ -93,29 +138,45 @@ resource "aws_ecs_service" "main" {
   }
 }
 
-data "aws_network_interface" "bar" {
-  # count = "${length(local.subnets)}"
+# resource "aws_db_instance" "main" {
+#   identifier           = "${local.name}-db-${local.environment}"
+#   allocated_storage    = 10
+#   engine               = "mysql"
+#   engine_version       = "8.0"
+#   instance_class       = "db.t3.micro"
+#   db_name              = "demo"
+#   username             = "demo"
+#   password             = "12345678"
+#   publicly_accessible  = false
+#   skip_final_snapshot  = true
+# }
 
-  filter {
-    name   = "group-id"
-    values = [aws_security_group.tasks.id]
-  }
 
-  filter {
-    name   = "vpc-id"
-    values = [local.vpc_id]
-  }
+# data "aws_network_interface" "bar" {
+#   # count = "${length(local.subnets)}"
 
-  filter {
-    name   = "subnet-id"
-    values = local.subnets
-  }
-}
+#   filter {
+#     name   = "group-id"
+#     values = [aws_security_group.tasks.id]
+#   }
 
-output "public_ip" {
-  value = data.aws_network_interface.bar.association.*.public_ip
-}
+#   filter {
+#     name   = "vpc-id"
+#     values = [local.vpc_id]
+#   }
 
-output "public_dns_name" {
-  value = data.aws_network_interface.bar.association.*.public_dns_name
-}
+#   filter {
+#     name   = "subnet-id"
+#     values = local.subnets
+#   }
+
+#   depends_on = [aws_ecs_service.main]
+# }
+
+# output "public_ip" {
+#   value = data.aws_network_interface.bar.association.*.public_ip
+# }
+
+# output "public_dns_name" {
+#   value = data.aws_network_interface.bar.association.*.public_dns_name
+# }

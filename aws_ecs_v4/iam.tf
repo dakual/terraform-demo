@@ -38,3 +38,13 @@ resource "aws_iam_role_policy_attachment" "a1" {
   role       = aws_iam_role.execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+resource "aws_iam_role_policy_attachment" "a3" {
+  role       = aws_iam_role.execution.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "a2" {
+  role       = aws_iam_role.task.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
+}
