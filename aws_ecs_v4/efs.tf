@@ -9,8 +9,9 @@ resource "aws_efs_access_point" "main" {
     gid = 1001
     uid = 1001
   }
+  
   root_directory {
-    path = "/wordpress"
+    path = "/bitnami/wordpress"
     creation_info {
       owner_gid   = 1001
       owner_uid   = 1001
@@ -25,33 +26,33 @@ resource "aws_efs_mount_target" "main" {
   security_groups = [ aws_security_group.efs.id ]
 }
 
-resource "aws_efs_file_system_policy" "policy" {
-  file_system_id = aws_efs_file_system.main.id
-  policy = <<POLICY
-{
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "*"
-            },
-            "Action": [
-                "elasticfilesystem:*"
-            ],
-            "Resource": "${aws_efs_file_system.main.arn}",
-            "Condition": {
-                "Bool": {
-                    "aws:SecureTransport": "true"
-                },
-                "StringEquals": {
-                    "elasticfilesystem:AccessPointArn" : "${aws_efs_access_point.main.arn}"
-                }
-            }
-        }
-    ]
-}
-POLICY
-}
+# resource "aws_efs_file_system_policy" "policy" {
+#   file_system_id = aws_efs_file_system.main.id
+#   policy = <<POLICY
+# {
+#     "Statement": [
+#         {
+#             "Effect": "Allow",
+#             "Principal": {
+#                 "AWS": "*"
+#             },
+#             "Action": [
+#                 "elasticfilesystem:*"
+#             ],
+#             "Resource": "${aws_efs_file_system.main.arn}",
+#             "Condition": {
+#                 "Bool": {
+#                     "aws:SecureTransport": "true"
+#                 },
+#                 "StringEquals": {
+#                     "elasticfilesystem:AccessPointArn" : "${aws_efs_access_point.main.arn}"
+#                 }
+#             }
+#         }
+#     ]
+# }
+# POLICY
+# }
 
 
 resource "aws_security_group" "efs" {

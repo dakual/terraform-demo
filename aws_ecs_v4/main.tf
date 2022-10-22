@@ -30,14 +30,6 @@ resource "aws_security_group" "tasks" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
-  ingress {
-    description      = "NFS traffic from VPC"
-    from_port        = 2049
-    to_port          = 2049
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-  }
-
   egress {
     protocol         = "-1"
     from_port        = 0
@@ -95,9 +87,8 @@ resource "aws_ecs_task_definition" "main" {
       # entryPoint = ["sh","-c"]
       # command = ["/bin/sh -c \"id && ls -al /bitnami && ls -al /bitnami/wordpress\""]
       mountPoints = [{
-        "sourceVolume"  = "wordpress_data",
-        "containerPath" = "/bitnami/wordpress",
-        "readOnly"      = false
+        "sourceVolume"  = "wordpress",
+        "containerPath" = "/bitnami/wordpress"
       }]
       logConfiguration = {
         logDriver = "awslogs"
@@ -110,14 +101,14 @@ resource "aws_ecs_task_definition" "main" {
   }])
 
   volume {
-    name = "wordpress_data"
+    name = "wordpress"
     efs_volume_configuration {
       file_system_id = aws_efs_file_system.main.id
       root_directory = "/"
       transit_encryption = "ENABLED"
       authorization_config {
         access_point_id = aws_efs_access_point.main.id
-        iam             = "ENABLED"
+        iam             = "DISABLED"
       }
     }
   }
