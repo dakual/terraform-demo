@@ -78,6 +78,9 @@ resource "aws_ecs_task_definition" "main" {
       },{
           name  = "ALLOW_EMPTY_PASSWORD"
           value = "true"
+      },{   
+          name  = "PHP_MEMORY_LIMIT"
+          value = "512M"
       }]
       portMappings = [{
           protocol      = "tcp"
@@ -170,4 +173,14 @@ resource "aws_ecs_service" "main" {
 
 # output "public_dns_name" {
 #   value = data.aws_network_interface.bar.association.*.public_dns_name
+# }
+
+# resource "random_string" "wordpress_admin_password" {
+#   length = 16
+# }
+
+# output "wordpress_admin_password" {
+#   description = "The Wordpress admin password"
+#   value     = random_string.wordpress_admin_password.result
+#   sensitive = true
 # }

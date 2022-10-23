@@ -38,44 +38,9 @@ resource "aws_iam_role" "ecs_task_role" {
 EOF
 }
 
-resource "aws_iam_policy" "dynamodb" {
-  name        = "${var.name}-task-policy-dynamodb"
-  description = "Policy that allows access to DynamoDB"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:CreateTable",
-                "dynamodb:UpdateTimeToLive",
-                "dynamodb:PutItem",
-                "dynamodb:DescribeTable",
-                "dynamodb:ListTables",
-                "dynamodb:DeleteItem",
-                "dynamodb:GetItem",
-                "dynamodb:Scan",
-                "dynamodb:Query",
-                "dynamodb:UpdateItem",
-                "dynamodb:UpdateTable"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-EOF
-}
-
 resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment" {
-  role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.dynamodb.arn
 }
 
 resource "aws_cloudwatch_log_group" "main" {
@@ -98,37 +63,21 @@ resource "aws_ecs_task_definition" "main" {
   
   container_definitions = jsonencode([{
     name         = "${var.name}-container-${var.environment}"
-    image        = "${var.container_image}:latest"
+    image        = "${var.container_image}"
     essential    = true
     environment  = var.container_environment
     portMappings = [{
       protocol      = "tcp"
       containerPort = var.container_port
       hostPort      = var.container_port
-    },{
+      },{
       protocol      = "tcp"
       containerPort = 8443
       hostPort      = 8443
     }]
-    # MountPoints = [{
-    #   "ContainerPath": "/bitnami/wordpress",
-    #   "SourceVolume": "efs-wordpress-data"
-    # }]
-    environment = [{
-        name  = "WORDPRESS_DATABASE_HOST"
-        value = var.db
-    },{
-        name  = "WORDPRESS_DATABASE_NAME"
-        value = var.db_name
-    },{
-        name  = "WORDPRESS_DATABASE_USER"
-        value = var.db_username
-    },{
-        name  = "WORDPRESS_DATABASE_PASSWORD"
-        value = var.db_password
-    },{
-        name  = "ALLOW_EMPTY_PASSWORD"
-        value = "true"
+    mountPoints = [{
+      "sourceVolume"  = "wordpress",
+      "containerPath" = "/bitnami/wordpress"
     }]
     logConfiguration = {
       logDriver = "awslogs"
@@ -140,18 +89,18 @@ resource "aws_ecs_task_definition" "main" {
     }
   }])
 
-  # volume {
-  #   name      = "wordpress-data"
-  #   host_path = "/bitnami/wordpress"
-  # }
-
-  # volume {
-  #   name      = "wordpress-data"
-  #   efs_volume_configuration {
-  #     file_system_id = aws_efs_file_system.main.id
-  #     root_directory = "/opt/data"
-  #   }
-  # }
+  volume {
+    name = "wordpress"
+    efs_volume_configuration {
+      file_system_id = var.efs_id
+      root_directory = "/"
+      transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = var.efs_ap_id
+        iam             = "DISABLED"
+      }
+    }
+  }
 
   tags = {
     Name        = "${var.name}-task-${var.environment}"

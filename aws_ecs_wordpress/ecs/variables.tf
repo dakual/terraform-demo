@@ -47,18 +47,10 @@ variable "container_environment" {
   type        = list
 }
 
-variable "db" {
-  description = "description"
+variable "efs_id" {
+  description = "efs id"
 }
 
-variable "db_name" {
-  description = "description"
-}
-
-variable "db_username" {
-  description = "description"
-}
-
-variable "db_password" {
-  description = "description"
+variable "efs_ap_id" {
+  description = "efs ap id"
 }

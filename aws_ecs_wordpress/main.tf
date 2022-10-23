@@ -41,6 +41,14 @@ module "vpc" {
   environment         = var.environment
 }
 
+module "efs" {
+  source              = "./efs"
+  name                = var.name
+  private_subnets     = module.vpc.private_subnets
+  vpc_id              = module.vpc.id
+  environment         = var.environment
+}
+
 module "alb" {
   source              = "./alb"
   name                = var.name
@@ -66,14 +74,27 @@ module "ecs" {
   subnets                     = module.vpc.private_subnets
   aws_alb_target_group_arn    = module.alb.aws_alb_target_group_arn
   ecs_service_security_groups = [ module.vpc.ecs_tasks ]
-  db                          = module.rds.db
-  db_name                     = var.db_name
-  db_username                 = var.db_username
-  db_password                 = var.db_password
+  efs_id                      = module.efs.id
+  efs_ap_id                   = module.efs.ap_id
   container_image             = var.container_image
   container_port              = var.container_port
   container_cpu               = var.container_cpu
   container_memory            = var.container_memory
   service_desired_count       = var.service_desired_count
-  container_environment       = [{ name = "LOG_LEVEL", value = "DEBUG" }, { name = "PORT", value = var.container_port }]
+  container_environment       = [{
+        name  = "WORDPRESS_DATABASE_HOST"
+        value = module.rds.db
+    },{
+        name  = "WORDPRESS_DATABASE_NAME"
+        value = var.db_name
+    },{
+        name  = "WORDPRESS_DATABASE_USER"
+        value = var.db_username
+    },{
+        name  = "WORDPRESS_DATABASE_PASSWORD"
+        value = var.db_password
+    },{
+        name  = "ALLOW_EMPTY_PASSWORD"
+        value = "true"
+  }]
 }
