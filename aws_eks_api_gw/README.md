@@ -4,26 +4,7 @@ aws eks update-kubeconfig --region eu-central-1 --name demo-cluster
 
 ```sh
 # https://aws.amazon.com/tr/premiumsupport/knowledge-center/eks-kubernetes-object-access-error/
-kubectl apply -f eks-console-full-access.yaml
 KUBE_EDITOR="nano" kubectl edit configmap aws-auth -n kube-system
-
-# for user
-mapUsers: |
-- userarn: arn:aws:iam::632296647497:user/dev
-    username: dev
-    groups:
-    - system:bootstrappers
-    - system:nodes
-    - eks-console-dashboard-full-access-group
-
-# for group
-mapRoles: |
-- rolearn: arn:aws:iam::632296647497:role/testrole
-    username: testrole    
-    groups:
-    - system:bootstrappers
-    - system:nodes
-    - eks-console-dashboard-full-access-group
 
 mapUsers: |
   - userarn: arn:aws:iam::632296647497:root
