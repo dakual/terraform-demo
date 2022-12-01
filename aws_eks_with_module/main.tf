@@ -52,7 +52,7 @@ module "eks" {
     initial = {
       min_size     = 1
       max_size     = 10
-      desired_size = 1
+      desired_size = 2
 
       create_security_group = false
       instance_types = ["t2.medium"]

@@ -7,13 +7,13 @@ variable "environment" {
 variable "cluster_name" {
   type        = string
   description = "The name of the cluster"
-  default     = "eks-demo"
+  default     = "int-monitoring-eks"
 }
 
 variable "cluster_version" {
   type        = string
   description = "The version of the cluster"
-  default     = "1.23"
+  default     = "1.24"
 }
 
 variable "region" {
