@@ -1,5 +1,5 @@
 ```sh
-aws eks update-kubeconfig --region eu-central-1 --name eks-demo
+aws eks update-kubeconfig --region eu-central-1 --name test
 ```
 
 ```sh
