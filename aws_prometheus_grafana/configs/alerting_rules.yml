@@ -1,0 +1,23 @@
+serverFiles:
+  alerting_rules.yml:
+    groups:
+    - name: DemoAlerts1
+      rules:
+      - alert: HighRequestLatency
+        expr: sum(rate(container_network_receive_bytes_total{namespace="kube-logging"}[5m]))>20000
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: High request latency
+
+    - name: DemoAlerts2
+      rules:
+        - alert: InstanceDown 
+          expr: up{job="services"} < 1 
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Instance {{ $labels.instance }} down"
+            description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."

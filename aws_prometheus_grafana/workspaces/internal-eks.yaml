@@ -1,0 +1,12 @@
+cluster: test
+domain: kruta.link
+prometheus:
+  cname: prometheus
+  admin_username: admin
+grafana:
+  cname: grafana
+  admin_username: admin
+ingress:
+  namespace: ingress-nginx
+  service: ingress-nginx-controller
+

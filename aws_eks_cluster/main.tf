@@ -9,6 +9,11 @@ locals {
   cluster_name        = "test"
   cluster_version     = "1.24"
   cluster_ip_family   = "ipv4"
+
+  ingress = {
+    enabled = true
+    certARN = "arn:aws:acm:eu-central-1:632296647497:certificate/3bb4db5c-486d-4af6-8b93-7ecde36c70a3" 
+  }
 }
 
 data "aws_eks_cluster_auth" "main" {
@@ -74,7 +79,7 @@ module "eks" {
     initial = {
       min_size     = 1
       max_size     = 10
-      desired_size = 1
+      desired_size = 2
 
       create_security_group  = false
       create_launch_template = false
@@ -125,4 +130,37 @@ resource "aws_security_group" "node" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+################################################################################
+# NGINX Ingress Controller
+################################################################################
+resource "kubernetes_namespace" "nginx" {
+  count = local.ingress.enabled == true ? 1 : 0
+
+  metadata {
+    labels = {
+      name = "ingress-nginx"
+    }
+    name = "ingress-nginx"
+  }
+}
+
+resource "helm_release" "ingress_nginx" {
+  count             = local.ingress.enabled == true ? 1 : 0
+  name              = "ingress-nginx"
+  repository        = "https://kubernetes.github.io/ingress-nginx"
+  chart             = "ingress-nginx"
+  namespace         = kubernetes_namespace.nginx[0].metadata.0.name
+  version           = "4.4.0"
+  create_namespace  = false
+  timeout           = 300
+  wait_for_jobs     = true 
+  wait              = true
+
+  values = [
+    templatefile("${path.module}/configs/nginx_ingress.yml", {
+      certARN = local.ingress.certARN
+    })
+  ]
 }
